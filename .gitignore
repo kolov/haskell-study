@@ -1,0 +1,6 @@
+.stack-work/
+haskell-study.cabal
+*~
+.idea
+out
+*.iml
