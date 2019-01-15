@@ -1,7 +1,6 @@
 
 import Test.QuickCheck
 import Test.Hspec
-import Lib
 import Chapter15Monoid
 
 import Data.Monoid
@@ -26,6 +25,9 @@ semigroupAssoc a b c = (a <> (b <> c)) == ((a <> b) <> c)
 
 combineAssoc :: (Eq b, Semigroup b) => a -> (Combine a b) -> (Combine a b) -> (Combine a b) -> Bool
 combineAssoc a c1 c2 c3 = unCombine (c1 <> (c2 <> c3))  a  == unCombine ((c1 <> c2) <> c3)  a
+
+memAssoc :: (Eq a, Eq s, Monoid a) => s -> (Mem s a) -> (Mem s a) -> (Mem s a) -> Bool
+memAssoc s m1 m2 m3 = runMem (m1 <> (m2 <> m3))  s  == runMem ((m1 <> m2) <> m3)  s
 
 instance Arbitrary Trivial where
   arbitrary = return Trivial
@@ -57,6 +59,20 @@ instance (CoArbitrary a, Arbitrary b) => Arbitrary (Combine a b) where
     f <- arbitrary
     return $ Combine f
 
+instance Show (Combine a b) where
+   show _ = "fun"
+
+instance CoArbitrary (Mem s a) where
+  coarbitrary (Mem f) = variant 0
+
+instance Show (Mem s a) where
+   show _ = "fun"
+
+instance (CoArbitrary a, Arbitrary a, Arbitrary s) => Arbitrary (Mem a s) where
+  arbitrary = do
+    f <- arbitrary
+    return $ Mem f
+
 main :: IO ()
 main = do
   quickCheck (monoidAssoc :: FirstMappend)
@@ -66,3 +82,4 @@ main = do
   quickCheck (semigroupAssoc :: Identity String -> Identity String -> Identity String -> Bool)
   quickCheck (monoidAssoc :: Two String String -> Two String String -> Two String String -> Bool)
   quickCheck (combineAssoc :: Int -> Combine Int (Sum Int) -> Combine Int (Sum Int) -> Combine Int (Sum Int) -> Bool)
+  quickCheck (memAssoc :: Int -> Mem Int String -> Mem Int String -> Mem Int String -> Bool)
